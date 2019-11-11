@@ -1,0 +1,52 @@
+version: '3'
+services:
+  app:
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+    image: application/app:latest
+    networks:
+     - mainapp
+    volumes:
+     - .:/var/www/html
+    ports:
+     - ${APP_PORT}:80
+    working_dir: /var/www/html
+  node:
+    build:
+      context: ./docker/node
+      dockerfile: Dockerfile
+    image: application/node:latest
+    networks:
+     - mainapp
+    volumes:
+     - .:/opt
+    working_dir: /opt
+    command: echo hi
+  cache:
+    image: redis:alpine
+    networks:
+     - mainapp
+    volumes:
+     - applicationcache:/data
+  db:
+    image: mysql:5.7
+    ports:
+     - ${DB_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: application
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+    networks:
+     - mainapp
+    volumes:
+     - applicationdb:/var/lib/mysql
+networks:
+  mainapp:
+    driver: bridge
+volumes:
+  applicationdb:
+    driver: local
+  applicationcache:
+    driver: local
